@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>柏レイソル返済管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #000; color: #fff; font-family: sans-serif; }
+        .reysol-yellow { color: #fff200; }
+        .reysol-bg-yellow { background-color: #fff200; }
+        .card { background-color: #1a1a1a; border: 1px solid #333; }
+        /* チェックボックスがONの時に文字を黄色く太くする */
+        input:checked + span { color: #fff200; font-weight: bold; }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+    <div class="max-w-xl mx-auto">
+        <header class="text-center mb-8 border-b-2 border-yellow-500 pb-4">
+            <h1 class="text-3xl font-black italic reysol-yellow tracking-tighter">柏レイソル応援返済管理サイト</h1>
+        </header>
+
+        <!-- 1. 債務者登録 -->
+        <div class="mb-8 flex gap-2">
+            <input type="text" id="nameInput" placeholder="名前を入力" class="flex-1 bg-zinc-900 border border-gray-700 rounded px-4 py-2 outline-none focus:border-yellow-500">
+            <button onclick="addPerson()" class="reysol-bg-yellow text-black font-bold px-6 py-2 rounded active:scale-95">登録</button>
+        </div>
+
+        <!-- 2. オプション選択 -->
+        <div class="mb-4 bg-zinc-900 p-4 rounded-t-xl border-t border-l border-r border-yellow-600/50 text-center">
+            <p class="text-[10px] text-yellow-500 mb-3 font-bold">オプション（先に選択）</p>
+            <div class="flex justify-center gap-6">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" id="hosoya" class="w-6 h-6 accent-yellow-400">
+                    <span class="text-sm">細谷ゴール (+¥5,000)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <input type="checkbox" id="cs" class="w-6 h-6 accent-yellow-400">
+                    <span class="text-sm">クリーンシート (+¥5,000)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 3. 勝利ボタン（すべて黄色） -->
+        <div class="grid grid-cols-3 gap-2 mb-4 bg-zinc-900 p-4 rounded-b-xl border-b border-l border-r border-yellow-600/50">
+            <p class="col-span-3 text-[10px] text-yellow-500 mb-1 text-center font-bold">勝利ボタン（確定）</p>
+            <button onclick="apply('win1')" class="reysol-bg-yellow hover:bg-yellow-400 text-black font-bold py-6 rounded-lg text-sm active:scale-95 transition-transform">勝利<br>+1万</button>
+            <button onclick="apply('win2')" class="reysol-bg-yellow hover:bg-yellow-400 text-black font-bold py-6 rounded-lg text-sm active:scale-95 transition-transform">2連勝<br>+1.5万</button>
+            <button onclick="apply('win3')" class="reysol-bg-yellow hover:bg-yellow-400 text-black font-bold py-6 rounded-lg text-sm active:scale-95 transition-transform">3連勝〜<br>+2万</button>
+        </div>
+
+        <!-- 4. 敗戦ボタン -->
+        <div class="mb-10 text-center">
+            <button onclick="apply('loss')" class="w-full bg-zinc-800 hover:bg-red-900 border border-red-700 text-red-500 hover:text-white font-bold py-4 rounded-xl transition-all active:scale-95">
+                敗戦 (-¥30,000)
+            </button>
+        </div>
+
+        <!-- 債務者リスト -->
+        <div id="list" class="space-y-4"></div>
+
+        <footer class="mt-20 text-center opacity-20 hover:opacity-100 transition-opacity">
+            <button onclick="resetAll()" class="text-xs text-gray-600 hover:text-red-500 underline">データを全消去</button>
+        </footer>
+    </div>
+
+    <script>
+        let people = JSON.parse(localStorage.getItem('reysol_debt_v4')) || [];
+
+        function save() {
+            localStorage.setItem('reysol_debt_v4', JSON.stringify(people));
+            render();
+        }
+
+        function addPerson() {
+            const name = document.getElementById('nameInput').value;
+            if (!name) return;
+            people.push({ name: name, balance: 0, logs: [] });
+            document.getElementById('nameInput').value = '';
+            save();
+        }
+
+        function apply(type) {
+            if (people.length === 0) return alert("債務者を登録してください");
+            
+            const isHosoya = document.getElementById('hosoya').checked;
+            const isCS = document.getElementById('cs').checked;
+
+            people.forEach(p => {
+                let amount = 0;
+                let title = "";
+
+                if (type === 'loss') {
+                    amount = -30000; title = "敗戦";
+                } else {
+                    if (type === 'win1') { amount = 10000; title = "勝利"; }
+                    if (type === 'win2') { amount = 15000; title = "2連勝"; }
+                    if (type === 'win3') { amount = 20000; title = "3連勝〜"; }
+                    
+                    if (isHosoya) { amount += 5000; title += "+細谷"; }
+                    if (isCS) { amount += 5000; title += "+CS"; }
+                }
+
+                p.balance += amount;
+                p.logs.unshift(`${new Date().toLocaleDateString()} ${title}: ${amount > 0 ? '+' : ''}${amount.toLocaleString()}`);
+            });
+
+            document.getElementById('hosoya').checked = false;
+            document.getElementById('cs').checked = false;
+            save();
+        }
+
+        function render() {
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = '';
+            people.forEach((p, idx) => {
+                const div = document.createElement('div');
+                div.className = 'card p-4 rounded-xl relative border-l-4 border-l-yellow-500 shadow-lg shadow-yellow-500/5';
+                div.innerHTML = `
+                    <button onclick="removePerson(${idx})" class="absolute top-2 right-2 text-gray-700 hover:text-red-500">×</button>
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1">
+                            <h2 class="text-lg font-bold">${p.name}</h2>
+                            <div class="text-[9px] text-gray-500 max-h-12 overflow-y-auto mt-1 leading-tight">
+                                ${p.logs.slice(0, 3).map(l => `<div>${l}</div>`).join('')}
+                            </div>
+                        </div>
+                        <div class="text-2xl font-black ${p.balance < 0 ? 'text-red-500' : 'text-green-400'} ml-4">
+                            ¥${p.balance.toLocaleString()}
+                        </div>
+                    </div>
+                `;
+                listDiv.appendChild(div);
+            });
+        }
+
+        function removePerson(i) { if(confirm("削除しますか？")) { people.splice(i, 1); save(); } }
+        function resetAll() { if(confirm("全消去しますか？")) { localStorage.clear(); people = []; render(); } }
+        render();
+    </script>
+</body>
+</html>
