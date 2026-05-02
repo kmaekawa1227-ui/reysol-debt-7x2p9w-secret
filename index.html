@@ -3,110 +3,293 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>柏レイソル返済管理</title>
+    <meta name="robots" content="noindex">
+    <title>柏レイソル返済管理システム v2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { background-color: #000; color: #fff; font-family: sans-serif; }
         .reysol-yellow { color: #fff200; }
         .reysol-bg-yellow { background-color: #fff200; }
-        .card { background-color: #1a1a1a; border: 1px solid #333; }
-        /* チェックボックスがONの時に文字を黄色く太くする */
-        input:checked + span { color: #fff200; font-weight: bold; }
+        .card { background-color: #1a1a1a; border: 1px solid #333; transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); border-color: #fff200; }
+        select option { background-color: #1a1a1a; color: #fff; }
+        .step-badge { background: #fff200; color: #000; padding: 2px 8px; border-radius: 99px; font-weight: bold; font-size: 10px; margin-right: 8px; }
+        .option-active { border-color: #fff200; box-shadow: 0 0 10px rgba(255, 242, 0, 0.2); }
+        .rule-box { border-left: 4px solid #fff200; background: #111; }
     </style>
 </head>
 <body class="p-4 sm:p-8">
-    <div class="max-w-xl mx-auto">
-        <header class="text-center mb-8 border-b-2 border-yellow-500 pb-4">
-            <h1 class="text-3xl font-black italic reysol-yellow tracking-tighter">柏レイソル応援返済管理サイト</h1>
+    <div class="max-w-3xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-black italic reysol-yellow tracking-widest mb-2">柏レイソル応援返済サイト</h1>
+            <p class="text-xs text-gray-400">勝利 = ＋(返済) / 敗戦 = ー(借金増)</p>
         </header>
 
-        <!-- 1. 債務者登録 -->
-        <div class="mb-8 flex gap-2">
-            <input type="text" id="nameInput" placeholder="名前を入力" class="flex-1 bg-zinc-900 border border-gray-700 rounded px-4 py-2 outline-none focus:border-yellow-500">
-            <button onclick="addPerson()" class="reysol-bg-yellow text-black font-bold px-6 py-2 rounded active:scale-95">登録</button>
-        </div>
+        <!-- 設定・登録エリア -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-zinc-900 p-4 rounded-lg border border-gray-800">
+                <label class="text-xs reysol-yellow mb-2 block">新規債務者登録</label>
+                <div class="flex gap-2">
+                    <input type="text" id="nameInput" placeholder="名前" class="flex-1 bg-black border border-gray-700 rounded px-3 py-2 outline-none focus:border-yellow-500 text-sm">
+                    <button onclick="addPerson()" class="reysol-bg-yellow text-black font-bold px-4 py-2 rounded text-sm">登録</button>
+                </div>
+            </div>
 
-        <!-- 2. オプション選択 -->
-        <div class="mb-4 bg-zinc-900 p-4 rounded-t-xl border-t border-l border-r border-yellow-600/50 text-center">
-            <p class="text-[10px] text-yellow-500 mb-3 font-bold">オプション（先に選択）</p>
-            <div class="flex justify-center gap-6">
-                <label class="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" id="hosoya" class="w-6 h-6 accent-yellow-400">
-                    <span class="text-sm">細谷ゴール (+¥5,000)</span>
-                </label>
-                <label class="flex items-center gap-2 cursor-pointer group">
-                    <input type="checkbox" id="cs" class="w-6 h-6 accent-yellow-400">
-                    <span class="text-sm">クリーンシート (+¥5,000)</span>
-                </label>
+            <div class="bg-zinc-900 p-4 rounded-lg border border-gray-800">
+                <label class="text-xs reysol-yellow mb-2 block">操作対象と大会・ミッション</label>
+                <div class="flex flex-col gap-2">
+                    <select id="targetPerson" class="bg-black border border-yellow-600 rounded px-3 py-2 text-sm font-bold outline-none">
+                        <option value="all">【対象：全員】</option>
+                    </select>
+
+                    <select id="competition" onchange="handleCompChange()" class="bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none">
+                        <option value="2026/27 J1リーグ">2026/27 J1リーグ</option>
+                        <option value="ACL E">ACL E</option>
+                        <option value="YBCルヴァンカップ">YBCルヴァンカップ</option>
+                        <option value="天皇杯">天皇杯</option>
+                        <option value="日本代表">日本代表</option>
+                        <option value="サッカー以外">サッカー以外（自由入力）</option>
+                        <option value="その他">その他</option>
+                    </select>
+
+                    <select id="matchWeek" class="bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none">
+                        <option value="">節を選択</option>
+                    </select>
+
+                    <select id="opponentSelect" class="bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none">
+                        <option value="">対戦相手を選択</option>
+                        <option value="水戸">水戸ホーリーホック</option>
+                        <option value="鹿島">鹿島アントラーズ</option>
+                        <option value="浦和">浦和レッズ</option>
+                        <option value="千葉">ジェフユナイテッド千葉</option>
+                        <option value="FC東京">FC東京</option>
+                        <option value="東京V">東京ヴェルディ</option>
+                        <option value="町田">FC町田ゼルビア</option>
+                        <option value="川崎">川崎フロンターレ</option>
+                        <option value="横浜FM">横浜F・マリノス</option>
+                        <option value="清水">清水エスパルス</option>
+                        <option value="名古屋">名古屋グランパス</option>
+                        <option value="京都">京都サンガF.C.</option>
+                        <option value="G大阪">ガンバ大阪</option>
+                        <option value="C大阪">セレッソ大阪</option>
+                        <option value="神戸">ヴィッセル神戸</option>
+                        <option value="岡山">ファジアーノ岡山</option>
+                        <option value="広島">サンフレッチェ広島</option>
+                        <option value="福岡">アビスパ福岡</option>
+                        <option value="長崎">V・ファーレン長崎</option>
+                    </select>
+
+                    <input type="text" id="opponentInput" placeholder="対戦国または内容を入力" class="hidden bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-yellow-500">
+                    
+                    <div id="manualAmountArea" class="hidden flex gap-2">
+                        <input type="number" id="manualAmount" placeholder="金額（例: 5000 / -3000）" class="flex-1 bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-yellow-500">
+                        <button onclick="applyManual()" class="bg-white text-black font-bold px-4 py-2 rounded text-sm">適用</button>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- 3. 勝利ボタン（すべて黄色） -->
-        <div class="grid grid-cols-3 gap-2 mb-4 bg-zinc-900 p-4 rounded-b-xl border-b border-l border-r border-yellow-600/50">
-            <p class="col-span-3 text-[10px] text-yellow-500 mb-1 text-center font-bold">勝利ボタン（確定）</p>
-            <button onclick="apply('win1')" class="reysol-bg-yellow hover:bg-yellow-400 text-black font-bold py-6 rounded-lg text-sm active:scale-95 transition-transform">勝利<br>+1万</button>
-            <button onclick="apply('win2')" class="reysol-bg-yellow hover:bg-yellow-400 text-black font-bold py-6 rounded-lg text-sm active:scale-95 transition-transform">2連勝<br>+1.5万</button>
-            <button onclick="apply('win3')" class="reysol-bg-yellow hover:bg-yellow-400 text-black font-bold py-6 rounded-lg text-sm active:scale-95 transition-transform">3連勝〜<br>+2万</button>
+        <hr class="border-gray-800 mb-8">
+
+        <div id="matchSection">
+            <div class="mb-6">
+                <h3 class="flex items-center text-sm font-bold mb-3"><span class="step-badge">STEP 1</span>ボーナス条件を選択</h3>
+                <div id="optionBox" class="flex justify-center gap-4 md:gap-8 bg-zinc-900 py-4 rounded-xl border border-gray-700 transition-all">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="hosoya" onchange="highlightOptions()" class="w-5 h-5 accent-yellow-400">
+                        <span class="text-sm group-hover:reysol-yellow transition-colors">細谷ゴール (+¥5,000)</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="cs" onchange="highlightOptions()" class="w-5 h-5 accent-yellow-400">
+                        <span class="text-sm group-hover:reysol-yellow transition-colors">クリーンシート (+¥5,000)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-10">
+                <h3 class="flex items-center text-sm font-bold mb-3"><span class="step-badge">STEP 2</span>試合結果を確定</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button onclick="apply('win1')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-5 rounded-xl shadow-lg border-b-4 border-yellow-600 text-sm">勝利</button>
+                    <button onclick="apply('win2')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-5 rounded-xl shadow-lg border-b-4 border-yellow-600 font-black text-sm">2連勝！</button>
+                    <button onclick="apply('win3')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-5 rounded-xl shadow-lg border-b-4 border-yellow-600 font-black text-sm">3連勝〜!!</button>
+                    <button onclick="apply('loss')" class="bg-red-800 hover:bg-red-700 text-white font-bold py-5 rounded-xl shadow-lg border-b-4 border-red-950 text-sm">敗戦</button>
+                </div>
+            </div>
         </div>
 
-        <!-- 4. 敗戦ボタン -->
-        <div class="mb-10 text-center">
-            <button onclick="apply('loss')" class="w-full bg-zinc-800 hover:bg-red-900 border border-red-700 text-red-500 hover:text-white font-bold py-4 rounded-xl transition-all active:scale-95">
-                敗戦 (-¥30,000)
-            </button>
+        <div id="list" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12"></div>
+
+        <!-- ルールまとめセクション -->
+        <div class="rule-box p-6 rounded-r-lg mb-12">
+            <h3 class="reysol-yellow font-bold text-lg mb-4">■ 運用ルール</h3>
+            <ul class="text-sm space-y-4 text-gray-300">
+                <li class="flex items-start">
+                    <span class="reysol-yellow mr-2">・</span>
+                    <span>本システムにおける「マイナス（赤字）」の金額分については、<b>年末に一括で債権者へ支払うものとする。</b></span>
+                </li>
+                <li class="flex items-start">
+                    <span class="reysol-yellow mr-2">・</span>
+                    <span>期限内に支払えない場合は、支払う額が増えてしまうこともあるので要注意！</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="reysol-yellow mr-2">・</span>
+                    <span>不正入力はログ（履歴）により常に監視されるため、健全な管理を徹底すること。</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="reysol-yellow mr-2">・</span>
+                    <span class="font-bold reysol-yellow uppercase tracking-wider">返済は計画的に。</span>
+                </li>
+                <li class="flex items-start">
+                    <span class="reysol-yellow mr-2">・</span>
+                    <span class="text-lg font-black">柏レイソルを全力で応援しましょう！</span>
+                </li>
+            </ul>
         </div>
 
-        <!-- 債務者リスト -->
-        <div id="list" class="space-y-4"></div>
-
-        <footer class="mt-20 text-center opacity-20 hover:opacity-100 transition-opacity">
-            <button onclick="resetAll()" class="text-xs text-gray-600 hover:text-red-500 underline">データを全消去</button>
+        <footer class="mt-10 text-center pb-20">
+            <button onclick="resetAll()" class="text-[10px] text-gray-600 hover:text-red-500 underline">全データを完全リセット</button>
         </footer>
     </div>
 
     <script>
-        let people = JSON.parse(localStorage.getItem('reysol_debt_v4')) || [];
+        let people = JSON.parse(localStorage.getItem('reysol_debt_v2_data')) || [];
+
+        const matchWeekSelect = document.getElementById('matchWeek');
+        for (let i = 1; i <= 38; i++) {
+            const opt = document.createElement('option');
+            opt.value = `第${i}節`;
+            opt.textContent = `第${i}節`;
+            matchWeekSelect.appendChild(opt);
+        }
+
+        function highlightOptions() {
+            const hosoya = document.getElementById('hosoya').checked;
+            const cs = document.getElementById('cs').checked;
+            const box = document.getElementById('optionBox');
+            if (hosoya || cs) {
+                box.classList.add('option-active');
+            } else {
+                box.classList.remove('option-active');
+            }
+        }
+
+        function handleCompChange() {
+            const comp = document.getElementById('competition').value;
+            const weekSelect = document.getElementById('matchWeek');
+            const oppSelect = document.getElementById('opponentSelect');
+            const oppInput = document.getElementById('opponentInput');
+            const manualArea = document.getElementById('manualAmountArea');
+            const matchSection = document.getElementById('matchSection');
+            
+            [weekSelect, oppSelect, oppInput, manualArea].forEach(el => el.classList.add('hidden'));
+            matchSection.style.opacity = "1";
+            matchSection.style.pointerEvents = "auto";
+
+            if (comp === "2026/27 J1リーグ") {
+                weekSelect.classList.remove('hidden');
+                oppSelect.classList.remove('hidden');
+            } else if (comp === "日本代表") {
+                oppInput.classList.remove('hidden');
+                oppInput.placeholder = "対戦国名を入力";
+            } else if (comp === "サッカー以外") {
+                oppInput.classList.remove('hidden');
+                oppInput.placeholder = "理由・項目（例：寝坊ペナ）";
+                manualArea.classList.remove('hidden');
+                matchSection.style.opacity = "0.3";
+                matchSection.style.pointerEvents = "none";
+            }
+        }
+
+        function updateTargetDropdown() {
+            const dropdown = document.getElementById('targetPerson');
+            const currentVal = dropdown.value;
+            dropdown.innerHTML = '<option value="all">【対象：全員】</option>';
+            people.forEach((p, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = p.name;
+                dropdown.appendChild(opt);
+            });
+            dropdown.value = currentVal;
+            if (dropdown.selectedIndex === -1) dropdown.value = "all";
+        }
 
         function save() {
-            localStorage.setItem('reysol_debt_v4', JSON.stringify(people));
+            localStorage.setItem('reysol_debt_v2_data', JSON.stringify(people));
+            updateTargetDropdown();
             render();
         }
 
         function addPerson() {
-            const name = document.getElementById('nameInput').value;
+            const input = document.getElementById('nameInput');
+            const name = input.value.trim();
             if (!name) return;
             people.push({ name: name, balance: 0, logs: [] });
-            document.getElementById('nameInput').value = '';
+            input.value = '';
+            save();
+        }
+
+        function getTargetIndices() {
+            const target = document.getElementById('targetPerson').value;
+            if (target === "all") return people.map((_, i) => i);
+            return [parseInt(target)];
+        }
+
+        function applyManual() {
+            if (people.length === 0) return alert("債務者を登録してください");
+            const indices = getTargetIndices();
+            const content = document.getElementById('opponentInput').value.trim() || "手動調整";
+            const amount = parseInt(document.getElementById('manualAmount').value);
+            if (isNaN(amount)) return alert("金額を数値で入力してください");
+
+            indices.forEach(idx => {
+                people[idx].balance += amount;
+                people[idx].logs.unshift(`${new Date().toLocaleDateString()} [外]${content}: ${amount > 0 ? '+' : ''}${amount.toLocaleString()}`);
+            });
+            document.getElementById('manualAmount').value = '';
+            document.getElementById('opponentInput').value = '';
             save();
         }
 
         function apply(type) {
             if (people.length === 0) return alert("債務者を登録してください");
-            
+            const indices = getTargetIndices();
+            const comp = document.getElementById('competition').value;
             const isHosoya = document.getElementById('hosoya').checked;
             const isCS = document.getElementById('cs').checked;
+            
+            let displayInfo = "";
+            if (comp === "2026/27 J1リーグ") {
+                const week = document.getElementById('matchWeek').value;
+                const opp = document.getElementById('opponentSelect').value;
+                if (!week || !opp) return alert("節と対戦相手を選択してください");
+                displayInfo = `${week} vs${opp}`;
+            } else if (comp === "日本代表") {
+                const opp = document.getElementById('opponentInput').value.trim();
+                if (!opp) return alert("対戦国を入力してください");
+                displayInfo = `代表 vs${opp}`;
+            } else { displayInfo = comp; }
 
-            people.forEach(p => {
+            indices.forEach(idx => {
                 let amount = 0;
                 let title = "";
-
-                if (type === 'loss') {
-                    amount = -30000; title = "敗戦";
-                } else {
-                    if (type === 'win1') { amount = 10000; title = "勝利"; }
-                    if (type === 'win2') { amount = 15000; title = "2連勝"; }
-                    if (type === 'win3') { amount = 20000; title = "3連勝〜"; }
-                    
+                switch(type) {
+                    case 'loss': amount = -30000; title = "敗戦"; break;
+                    case 'win1': amount = 10000; title = "勝利"; break;
+                    case 'win2': amount = 15000; title = "2連勝"; break;
+                    case 'win3': amount = 20000; title = "3連勝"; break;
+                }
+                if (type !== 'loss') {
                     if (isHosoya) { amount += 5000; title += "+細谷"; }
                     if (isCS) { amount += 5000; title += "+CS"; }
                 }
-
-                p.balance += amount;
-                p.logs.unshift(`${new Date().toLocaleDateString()} ${title}: ${amount > 0 ? '+' : ''}${amount.toLocaleString()}`);
+                people[idx].balance += amount;
+                people[idx].logs.unshift(`${new Date().toLocaleDateString()} ${displayInfo} ${title}: ${amount > 0 ? '+' : ''}${amount.toLocaleString()}`);
             });
-
             document.getElementById('hosoya').checked = false;
             document.getElementById('cs').checked = false;
+            document.getElementById('opponentInput').value = '';
+            highlightOptions();
             save();
         }
 
@@ -115,19 +298,15 @@
             listDiv.innerHTML = '';
             people.forEach((p, idx) => {
                 const div = document.createElement('div');
-                div.className = 'card p-4 rounded-xl relative border-l-4 border-l-yellow-500 shadow-lg shadow-yellow-500/5';
+                div.className = 'card p-6 rounded-2xl relative';
                 div.innerHTML = `
-                    <button onclick="removePerson(${idx})" class="absolute top-2 right-2 text-gray-700 hover:text-red-500">×</button>
-                    <div class="flex justify-between items-center">
-                        <div class="flex-1">
-                            <h2 class="text-lg font-bold">${p.name}</h2>
-                            <div class="text-[9px] text-gray-500 max-h-12 overflow-y-auto mt-1 leading-tight">
-                                ${p.logs.slice(0, 3).map(l => `<div>${l}</div>`).join('')}
-                            </div>
-                        </div>
-                        <div class="text-2xl font-black ${p.balance < 0 ? 'text-red-500' : 'text-green-400'} ml-4">
-                            ¥${p.balance.toLocaleString()}
-                        </div>
+                    <button onclick="removePerson(${idx})" class="absolute top-4 right-4 text-gray-600 hover:text-red-500 text-xl">×</button>
+                    <h2 class="text-xl font-bold mb-1">${p.name}</h2>
+                    <div class="text-3xl font-black ${p.balance < 0 ? 'text-red-500' : 'text-green-400'} mb-4">
+                        ¥${p.balance.toLocaleString()}
+                    </div>
+                    <div class="text-[10px] text-gray-500 h-32 overflow-y-auto border-t border-gray-800 pt-2 space-y-1">
+                        ${p.logs.map(l => `<div class="border-b border-zinc-800 pb-1">${l}</div>`).join('')}
                     </div>
                 `;
                 listDiv.appendChild(div);
@@ -135,7 +314,10 @@
         }
 
         function removePerson(i) { if(confirm("削除しますか？")) { people.splice(i, 1); save(); } }
-        function resetAll() { if(confirm("全消去しますか？")) { localStorage.clear(); people = []; render(); } }
+        function resetAll() { if(confirm("全消去しますか？")) { localStorage.clear(); people = []; render(); updateTargetDropdown(); } }
+
+        handleCompChange();
+        updateTargetDropdown();
         render();
     </script>
 </body>
