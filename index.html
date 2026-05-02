@@ -48,8 +48,7 @@
                         <option value="YBCルヴァンカップ">YBCルヴァンカップ</option>
                         <option value="天皇杯">天皇杯</option>
                         <option value="日本代表">日本代表</option>
-                        <option value="サッカー以外">サッカー以外（自由入力）</option>
-                        <option value="その他">その他</option>
+                        <option value="その他">その他（自由入力）</option>
                     </select>
 
                     <select id="matchWeek" class="bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none">
@@ -79,7 +78,7 @@
                         <option value="長崎">V・ファーレン長崎</option>
                     </select>
 
-                    <input type="text" id="opponentInput" placeholder="対戦国または内容を入力" class="hidden bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-yellow-500">
+                    <input type="text" id="opponentInput" placeholder="対戦相手を入力" class="hidden bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-yellow-500">
                     
                     <div id="manualAmountArea" class="hidden flex gap-2">
                         <input type="number" id="manualAmount" placeholder="金額（例: 5000 / -3000）" class="flex-1 bg-black border border-gray-700 rounded px-3 py-2 text-sm outline-none focus:border-yellow-500">
@@ -108,18 +107,29 @@
 
             <div class="mb-10">
                 <h3 class="flex items-center text-sm font-bold mb-3"><span class="step-badge">STEP 2</span>試合結果を確定</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <button onclick="apply('win1')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-5 rounded-xl shadow-lg border-b-4 border-yellow-600 text-sm">勝利</button>
-                    <button onclick="apply('win2')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-5 rounded-xl shadow-lg border-b-4 border-yellow-600 font-black text-sm">2連勝！</button>
-                    <button onclick="apply('win3')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-5 rounded-xl shadow-lg border-b-4 border-yellow-600 font-black text-sm">3連勝〜!!</button>
-                    <button onclick="apply('loss')" class="bg-red-800 hover:bg-red-700 text-white font-bold py-5 rounded-xl shadow-lg border-b-4 border-red-950 text-sm">敗戦</button>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <button onclick="apply('win1')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 rounded-xl shadow-lg border-b-4 border-yellow-600">
+                        <div class="text-sm">勝利</div>
+                        <div class="text-xs">+10,000</div>
+                    </button>
+                    <button onclick="apply('win2')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 rounded-xl shadow-lg border-b-4 border-yellow-600">
+                        <div class="text-sm">2連勝</div>
+                        <div class="text-xs">+15,000</div>
+                    </button>
+                    <button onclick="apply('win3')" class="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-4 rounded-xl shadow-lg border-b-4 border-yellow-600">
+                        <div class="text-sm">3連勝〜</div>
+                        <div class="text-xs">+20,000</div>
+                    </button>
+                    <button onclick="apply('loss')" class="bg-red-800 hover:bg-red-700 text-white font-bold py-4 rounded-xl shadow-lg border-b-4 border-red-950">
+                        <div class="text-sm">敗戦</div>
+                        <div class="text-xs">-30,000</div>
+                    </button>
                 </div>
             </div>
         </div>
 
         <div id="list" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-12"></div>
 
-        <!-- ルールまとめセクション -->
         <div class="rule-box p-6 rounded-r-lg mb-12">
             <h3 class="reysol-yellow font-bold text-lg mb-4">■ 運用ルール</h3>
             <ul class="text-sm space-y-4 text-gray-300">
@@ -129,15 +139,7 @@
                 </li>
                 <li class="flex items-start">
                     <span class="reysol-yellow mr-2">・</span>
-                    <span>期限内に支払えない場合は、支払う額が増えてしまうこともあるので要注意！</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="reysol-yellow mr-2">・</span>
                     <span>不正入力はログ（履歴）により常に監視されるため、健全な管理を徹底すること。</span>
-                </li>
-                <li class="flex items-start">
-                    <span class="reysol-yellow mr-2">・</span>
-                    <span class="font-bold reysol-yellow uppercase tracking-wider">返済は計画的に。</span>
                 </li>
                 <li class="flex items-start">
                     <span class="reysol-yellow mr-2">・</span>
@@ -188,12 +190,12 @@
             if (comp === "2026/27 J1リーグ") {
                 weekSelect.classList.remove('hidden');
                 oppSelect.classList.remove('hidden');
-            } else if (comp === "日本代表") {
+            } else if (comp === "ACL E" || comp === "YBCルヴァンカップ" || comp === "天皇杯" || comp === "日本代表") {
                 oppInput.classList.remove('hidden');
-                oppInput.placeholder = "対戦国名を入力";
-            } else if (comp === "サッカー以外") {
+                oppInput.placeholder = "対戦相手を入力";
+            } else if (comp === "その他") {
                 oppInput.classList.remove('hidden');
-                oppInput.placeholder = "理由・項目（例：寝坊ペナ）";
+                oppInput.placeholder = "理由・項目名を入力（例：遅刻、他競技など）";
                 manualArea.classList.remove('hidden');
                 matchSection.style.opacity = "0.3";
                 matchSection.style.pointerEvents = "none";
@@ -238,13 +240,13 @@
         function applyManual() {
             if (people.length === 0) return alert("債務者を登録してください");
             const indices = getTargetIndices();
-            const content = document.getElementById('opponentInput').value.trim() || "手動調整";
+            const content = document.getElementById('opponentInput').value.trim() || "その他";
             const amount = parseInt(document.getElementById('manualAmount').value);
             if (isNaN(amount)) return alert("金額を数値で入力してください");
 
             indices.forEach(idx => {
                 people[idx].balance += amount;
-                people[idx].logs.unshift(`${new Date().toLocaleDateString()} [外]${content}: ${amount > 0 ? '+' : ''}${amount.toLocaleString()}`);
+                people[idx].logs.unshift(`${new Date().toLocaleDateString()} [他]${content}: ${amount > 0 ? '+' : ''}${amount.toLocaleString()}`);
             });
             document.getElementById('manualAmount').value = '';
             document.getElementById('opponentInput').value = '';
@@ -264,11 +266,11 @@
                 const opp = document.getElementById('opponentSelect').value;
                 if (!week || !opp) return alert("節と対戦相手を選択してください");
                 displayInfo = `${week} vs${opp}`;
-            } else if (comp === "日本代表") {
+            } else if (comp === "ACL E" || comp === "YBCルヴァンカップ" || comp === "天皇杯" || comp === "日本代表") {
                 const opp = document.getElementById('opponentInput').value.trim();
-                if (!opp) return alert("対戦国を入力してください");
-                displayInfo = `代表 vs${opp}`;
-            } else { displayInfo = comp; }
+                if (!opp) return alert("対戦相手を入力してください");
+                displayInfo = `${comp} vs${opp}`;
+            }
 
             indices.forEach(idx => {
                 let amount = 0;
